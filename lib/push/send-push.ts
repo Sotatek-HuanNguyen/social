@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { webPush } from "./vapid";
+import { getWebPush } from "./vapid";
 
 interface PushPayload {
   title: string;
@@ -16,9 +16,10 @@ export async function sendPushToAll(payload: PushPayload) {
   const subs = await prisma.pushSubscription.findMany();
   if (subs.length === 0) return;
 
+  const push = getWebPush();
   const results = await Promise.allSettled(
     subs.map((sub) =>
-      webPush.sendNotification(
+      push.sendNotification(
         {
           endpoint: sub.endpoint,
           keys: sub.keys as { p256dh: string; auth: string },

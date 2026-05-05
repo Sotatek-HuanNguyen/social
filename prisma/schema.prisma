@@ -11,6 +11,8 @@ datasource db {
 enum Category {
   ECONOMIC
   POLITICAL
+  CRYPTO
+  TECH
   GENERAL
 }
 

@@ -7,6 +7,13 @@ const RSS_FEEDS = [
   { url: "https://vietnamnet.vn/rss/kinh-te.rss", source: "VietnamNet" },
   { url: "https://tuoitre.vn/rss/kinh-te.rss", source: "TuoiTre" },
   { url: "https://thanhnien.vn/rss/kinh-te.rss", source: "ThanhNien" },
+  // Crypto feeds
+  { url: "https://cointelegraph.com/rss", source: "CoinTelegraph" },
+  { url: "https://www.coindesk.com/arc/outboundfeeds/rss/", source: "CoinDesk" },
+  // Tech feeds
+  { url: "https://vnexpress.net/rss/so-hoa.rss", source: "VnExpress" },
+  { url: "https://tuoitre.vn/rss/nhip-song-so.rss", source: "TuoiTre" },
+  { url: "https://thanhnien.vn/rss/cong-nghe.rss", source: "ThanhNien" },
 ];
 
 const parser = new Parser({ timeout: 10_000 });
