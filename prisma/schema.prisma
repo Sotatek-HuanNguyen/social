@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Category {
+  ECONOMIC
+  POLITICAL
+  GENERAL
+}
+
+model Article {
+  id          String   @id @default(uuid())
+  url         String   @unique
+  title       String
+  summary     String?
+  source      String
+  category    Category @default(GENERAL)
+  imageUrl    String?
+  publishedAt DateTime
+  fetchedAt   DateTime @default(now())
+  isBreaking  Boolean  @default(false)
+
+  @@index([category, publishedAt(sort: Desc)])
+  @@index([publishedAt(sort: Desc)])
+}
+
+model AlertRule {
+  id        String   @id @default(uuid())
+  keywords  String[]
+  category  String?
+  createdAt DateTime @default(now())
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String   @unique
+  keys      Json     // { p256dh: string, auth: string }
+  createdAt DateTime @default(now())
+}
