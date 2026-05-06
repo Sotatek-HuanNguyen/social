@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { fetchRssFeeds } from "@/lib/services/rss-fetcher";
+import { fetchXFeeds } from "@/lib/services/x-fetcher";
 import { fetchCurrentsApi } from "@/lib/services/currents-api-client";
 import { normalizeArticle } from "@/lib/services/article-normalizer";
 import { classifyArticle } from "@/lib/utils/keyword-classifier";
@@ -15,13 +16,15 @@ export async function GET(req: NextRequest) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [rssResult, currentsResult] = await Promise.allSettled([
+  const [rssResult, xResult, currentsResult] = await Promise.allSettled([
     fetchRssFeeds(),
+    fetchXFeeds(),
     fetchCurrentsApi(),
   ]);
 
   const all: RawArticle[] = [
     ...(rssResult.status === "fulfilled" ? rssResult.value : []),
+    ...(xResult.status === "fulfilled" ? xResult.value : []),
     ...(currentsResult.status === "fulfilled" ? currentsResult.value : []),
   ];
 
