@@ -1,57 +1,58 @@
-import Parser from "rss-parser";
+import { TwitterApi } from "twitter-api-v2";
 import { RawArticle } from "@/types/article";
 
-// X/Twitter accounts to fetch via Nitter RSS
+// X accounts to monitor (handle → cached user ID)
 const X_ACCOUNTS = [
-  { handle: "CryptoCred", source: "CryptoCred" },
-  { handle: "AltCryptoBet", source: "AltCryptoBet" },
-  { handle: "BTC_Archive", source: "BTC_Archive" },
-  { handle: "CoinDesk", source: "CoinDesk" },
-  { handle: "CryptoNews", source: "CryptoNews" },
+  { handle: "CryptoCred" },
+  { handle: "AltCryptoBet" },
+  { handle: "BTC_Archive" },
+  { handle: "CoinDesk" },
+  { handle: "CryptoNews" },
 ];
 
-// Nitter instances (fallback list)
-const NITTER_INSTANCES = [
-  "nitter.uest.cc",
-  "nitter.poast.org",
-  "nitter.net",
-];
-
-const parser = new Parser({ timeout: 10_000 });
-
-async function fetchFromNitter(
-  handle: string,
-  instance: string
-): Promise<RawArticle[]> {
-  try {
-    const url = `https://${instance}/${handle}/rss`;
-    const parsed = await parser.parseURL(url);
-
-    return (parsed.items ?? []).map((item) => ({
-      url: item.link ?? `https://x.com/${handle}/status/${item.id}`,
-      title: item.title ?? "",
-      summary: (item.contentSnippet ?? item.content ?? "").slice(0, 300),
-      imageUrl: item.enclosure?.url,
-      publishedAt: item.pubDate ? new Date(item.pubDate) : new Date(),
-      source: handle,
-    }));
-  } catch {
-    return [];
-  }
-}
+// In-memory user ID cache (persists across invocations in warm serverless)
+const userIdCache = new Map<string, string>();
 
 export async function fetchXFeeds(): Promise<RawArticle[]> {
+  const token = process.env.X_BEARER_TOKEN;
+  if (!token) return [];
+
+  const client = new TwitterApi(token).readOnly;
   const results: RawArticle[] = [];
 
   for (const account of X_ACCOUNTS) {
-    for (const instance of NITTER_INSTANCES) {
-      const articles = await fetchFromNitter(account.handle, instance);
-      if (articles.length > 0) {
-        results.push(...articles);
-        break; // Success from this account, move to next
+    try {
+      // Resolve handle → user ID (cached)
+      let userId = userIdCache.get(account.handle);
+      if (!userId) {
+        const user = await client.v2.userByUsername(account.handle);
+        if (!user.data) continue;
+        userId = user.data.id;
+        userIdCache.set(account.handle, userId);
       }
+
+      // Fetch recent tweets (original only, no RTs/replies)
+      const timeline = await client.v2.userTimeline(userId, {
+        max_results: 10,
+        "tweet.fields": ["created_at", "text"],
+        exclude: ["retweets", "replies"],
+      });
+
+      for (const tweet of timeline.data?.data ?? []) {
+        results.push({
+          url: `https://x.com/${account.handle}/status/${tweet.id}`,
+          title: tweet.text.slice(0, 120),
+          summary: tweet.text.slice(0, 300),
+          publishedAt: tweet.created_at
+            ? new Date(tweet.created_at)
+            : new Date(),
+          source: account.handle,
+        });
+      }
+    } catch {
+      // Skip failed accounts, continue others
     }
   }
 
-  return results.filter((a) => a.url);
+  return results;
 }
