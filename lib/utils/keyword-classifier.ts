@@ -41,6 +41,19 @@ const CRYPTO_KEYWORDS = [
   "token",
   "mining",
   "đào coin",
+  // Onchain/market data terms
+  "whale",
+  "tvl",
+  "open interest",
+  "funding rate",
+  "liquidation",
+  "defillama",
+  "etherscan",
+  "coingecko",
+  "onchain",
+  "on-chain",
+  "btc",
+  "eth",
 ];
 
 const TECH_KEYWORDS = [
@@ -74,9 +87,17 @@ const TECH_KEYWORDS = [
 
 export function classifyArticle(title: string, summary: string): Category {
   const text = `${title} ${summary}`.toLowerCase();
-  if (CRYPTO_KEYWORDS.some((k) => text.includes(k))) return "CRYPTO";
-  if (TECH_KEYWORDS.some((k) => text.includes(k))) return "TECH";
-  if (ECONOMIC_KEYWORDS.some((k) => text.includes(k))) return "ECONOMIC";
-  if (POLITICAL_KEYWORDS.some((k) => text.includes(k))) return "POLITICAL";
+  // Use word-boundary matching to avoid substring collisions (e.g. "btc" vs "Bethesda")
+  const matches = (keyword: string) => {
+    const k = keyword.toLowerCase();
+    // For Vietnamese multi-word phrases, fall back to substring match (word boundaries don't work well with diacritics)
+    if (/[^a-z0-9 ]/.test(k) || k.includes(" ")) return text.includes(k);
+    const re = new RegExp(`\\b${k}\\b`, "i");
+    return re.test(text);
+  };
+  if (CRYPTO_KEYWORDS.some(matches)) return "CRYPTO";
+  if (TECH_KEYWORDS.some(matches)) return "TECH";
+  if (ECONOMIC_KEYWORDS.some(matches)) return "ECONOMIC";
+  if (POLITICAL_KEYWORDS.some(matches)) return "POLITICAL";
   return "GENERAL";
 }

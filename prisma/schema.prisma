@@ -45,3 +45,15 @@ model PushSubscription {
   keys      Json     // { p256dh: string, auth: string }
   createdAt DateTime @default(now())
 }
+
+model CryptoSnapshot {
+  id        String   @id @default(uuid())
+  source    String   // "coingecko", "etherscan", "defillama", "binance"
+  symbol    String   // "BTC", "ETH", "aave", "BTCUSDT"
+  value     Float    // last known numeric value
+  metadata  Json?    // optional extra data (funding rate, volume, etc.)
+  updatedAt DateTime @updatedAt
+
+  @@unique([source, symbol])
+  @@index([source])
+}

@@ -3,6 +3,10 @@ import { prisma } from "@/lib/db";
 import { fetchRssFeeds } from "@/lib/services/rss-fetcher";
 import { fetchXFeeds } from "@/lib/services/x-fetcher";
 import { fetchCurrentsApi } from "@/lib/services/currents-api-client";
+import { fetchCoinGeckoPrices } from "@/lib/services/coingecko-price-fetcher";
+import { fetchEtherscanWhaleTransfers } from "@/lib/services/etherscan-whale-fetcher";
+import { fetchDefiLlamaTvl } from "@/lib/services/defillama-tvl-fetcher";
+import { fetchBinanceFuturesData } from "@/lib/services/binance-futures-fetcher";
 import { normalizeArticle } from "@/lib/services/article-normalizer";
 import { classifyArticle } from "@/lib/utils/keyword-classifier";
 import { sendPushToAll } from "@/lib/push/send-push";
@@ -16,17 +20,25 @@ export async function GET(req: NextRequest) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [rssResult, xResult, currentsResult] = await Promise.allSettled([
+  const fetcherNames = ["RSS", "X/Twitter", "Currents", "CoinGecko", "Etherscan", "DeFiLlama", "Binance"];
+  const results = await Promise.allSettled([
     fetchRssFeeds(),
     fetchXFeeds(),
     fetchCurrentsApi(),
+    fetchCoinGeckoPrices(),
+    fetchEtherscanWhaleTransfers(),
+    fetchDefiLlamaTvl(),
+    fetchBinanceFuturesData(),
   ]);
 
-  const all: RawArticle[] = [
-    ...(rssResult.status === "fulfilled" ? rssResult.value : []),
-    ...(xResult.status === "fulfilled" ? xResult.value : []),
-    ...(currentsResult.status === "fulfilled" ? currentsResult.value : []),
-  ];
+  // Log rejected fetchers for observability (M2 fix)
+  results.forEach((r, i) => {
+    if (r.status === "rejected") console.warn(`Fetcher ${fetcherNames[i]} failed:`, r.reason);
+  });
+
+  const all: RawArticle[] = results.flatMap((r) =>
+    r.status === "fulfilled" ? r.value : []
+  );
 
   let saved = 0;
   const newBreaking: { title: string; url: string; source: string }[] = [];
@@ -46,8 +58,8 @@ export async function GET(req: NextRequest) {
         newBreaking.push({ title: normalized.title, url: normalized.url, source: normalized.source });
       }
       saved++;
-    } catch {
-      // skip duplicates or DB errors for individual articles
+    } catch (err) {
+      console.warn(`Article upsert failed for ${normalized.url}:`, err);
     }
   }
 
@@ -61,8 +73,8 @@ export async function GET(req: NextRequest) {
         url: latest.url,
         tag: "breaking",
       });
-    } catch {
-      // Push failure should not break ingest
+    } catch (err) {
+      console.warn("Push notification failed:", err);
     }
   }
 

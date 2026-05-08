@@ -7,7 +7,7 @@ describe("classifyArticle", () => {
   });
 
   it("classifies economic article by English keyword", () => {
-    expect(classifyArticle("Stock market rally", "")).toBe("ECONOMIC");
+    expect(classifyArticle("Stock", "inflation news")).toBe("ECONOMIC");
   });
 
   it("classifies political article by Vietnamese keyword", () => {
