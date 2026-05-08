@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Roboto, Geist_Mono } from "next/font/google";
-import Link from "next/link";
-import { NotificationPermissionButton } from "@/components/notification-permission-button";
+import { LayoutShell } from "@/components/layout/layout-shell";
 import "./globals.css";
 
 const roboto = Roboto({
@@ -33,20 +33,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-[family-name:var(--font-roboto)]">
-        <header className="border-b px-6 py-3 flex items-center justify-between">
-          <Link href="/" className="font-bold text-lg">
-            Theo Dõi Tin Tức
-          </Link>
-          <nav className="flex items-center gap-4">
-            <NotificationPermissionButton />
-            <Link href="/alerts" className="text-sm hover:underline">
-              Cảnh báo
-            </Link>
-          </nav>
-        </header>
-        <main className="max-w-4xl mx-auto w-full px-4 py-6 flex-1">
-          {children}
-        </main>
+        <Suspense>
+          <LayoutShell>{children}</LayoutShell>
+        </Suspense>
       </body>
     </html>
   );

@@ -2,9 +2,10 @@ import { Suspense } from "react";
 import { prisma } from "@/lib/db";
 import { Category } from "@prisma/client";
 import { BreakingNewsBanner } from "@/components/breaking-news-banner";
-import { FilterBar } from "@/components/filter-bar";
 import { ArticleFeed } from "@/components/article-feed";
 import { Skeleton } from "@/components/ui/skeleton";
+
+const VALID_CATEGORIES = ["ECONOMIC", "POLITICAL", "GENERAL", "CRYPTO", "TECH"];
 
 interface PageProps {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -13,16 +14,19 @@ interface PageProps {
 export default async function Home({ searchParams }: PageProps) {
   const params = await searchParams;
   const categoryParam = params.category;
-  const category = categoryParam && ["ECONOMIC", "POLITICAL", "GENERAL"].includes(categoryParam)
-    ? (categoryParam as Category)
-    : undefined;
+  const category =
+    categoryParam && VALID_CATEGORIES.includes(categoryParam)
+      ? (categoryParam as Category)
+      : undefined;
   const source = params.source;
   const search = params.search;
 
   const where = {
     ...(category ? { category } : {}),
     ...(source ? { source } : {}),
-    ...(search ? { title: { contains: search, mode: "insensitive" as const } } : {}),
+    ...(search
+      ? { title: { contains: search, mode: "insensitive" as const } }
+      : {}),
   };
 
   const [articles, total] = await Promise.all([
@@ -48,9 +52,8 @@ export default async function Home({ searchParams }: PageProps) {
 
   return (
     <div>
-      <BreakingNewsBanner />
       <Suspense fallback={<Skeleton className="h-10 w-full mb-4" />}>
-        <FilterBar />
+        <BreakingNewsBanner />
       </Suspense>
       <ArticleFeed
         initialArticles={serialized}
