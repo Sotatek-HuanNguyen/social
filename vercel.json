@@ -1,5 +1,5 @@
 {
   "crons": [
-    { "path": "/api/ingest?secret=CRON_SECRET", "schedule": "0 8 * * *" }
+    { "path": "/api/ingest", "schedule": "*/15 * * * *" }
   ]
 }
