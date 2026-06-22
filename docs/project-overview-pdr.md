@@ -29,11 +29,13 @@
 
 ## Key Features
 
-1. **News Ingestion** - Cron job fetches RSS feeds + CurrentsAPI every 15min, normalizes, deduplicates (upsert by URL), classifies
-2. **Article Feed** - Paginated list with category/source/search filters, SSR for initial load
-3. **Breaking News Banner** - Client-side SSE subscription, polls DB every 30s, fallback to HTTP polling
-4. **Alert Rules** - CRUD API for global alert rules (stored in DB)
-5. **SSE Stream** - `/api/alerts/sse` pushes breaking articles to connected clients
+1. **News Ingestion** - Cron job fetches from 7 sources (5 RSS + X API + CurrentsAPI) every 24h, normalizes, deduplicates (upsert by URL), classifies
+2. **Crypto Onchain Data** - Fetches price alerts (CoinGecko), whale transfers (Etherscan V2), TVL (DeFiLlama), futures data (Binance)
+3. **Article Feed** - Paginated list with category/source/search filters, SSR for initial load, 3-column responsive layout
+4. **Breaking News Banner** - Client-side SSE subscription, polls DB every 30s, fallback to HTTP polling
+5. **Alert Rules** - CRUD API for global alert rules (stored in DB)
+6. **SSE Stream** - `/api/alerts/sse` pushes breaking articles to connected clients
+7. **Push Notifications** - Web push for non-GENERAL articles, auto-cleanup of 410 responses
 
 ## Database Models
 
@@ -57,6 +59,16 @@ id        String   @id @default(uuid())
 keywords  String[]
 category  String?
 createdAt DateTime @default(now())
+```
+
+### CryptoSnapshot
+```
+id        String   @id @default(uuid())
+source    String   // "coingecko", "etherscan", "defillama", "binance"
+symbol    String   // "BTC", "ETH", "aave", "BTCUSDT"
+value     Float    // last known numeric value
+metadata  Json?    // optional extra data
+updatedAt DateTime @updatedAt
 ```
 
 ## Environment Variables

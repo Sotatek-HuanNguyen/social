@@ -71,3 +71,80 @@
   - Updated `app/globals.css` to use `var(--font-roboto)`
 
 - **Dependencies**: `web-push` + `@types/web-push`
+
+## [0.3.0] - 2026-05-07 - X/Twitter Integration + Crypto Onchain Data
+
+### Added
+
+- **X/Twitter News Integration**
+  - `lib/services/x-fetcher.ts` - Fetch news tweets via X API v2
+  - Integrated into `/api/ingest` pipeline via Promise.allSettled
+
+- **Crypto Onchain/Market Data Integration**
+  - `lib/services/coingecko-price-fetcher.ts` - Fetch crypto price alerts
+  - `lib/services/etherscan-whale-fetcher.ts` - Fetch whale transfers via Etherscan V2 API (migrated from V1)
+  - `lib/services/defillama-tvl-fetcher.ts` - Fetch DeFi TVL alerts
+  - `lib/services/binance-futures-fetcher.ts` - Fetch futures open interest + funding rates
+  - `prisma/schema.prisma` - Added `CryptoSnapshot` model for change detection (source, symbol, value, metadata)
+  - All 4 fetchers integrated into `/api/ingest` pipeline
+
+- **Enhanced Keyword Classifier**
+  - Added CRYPTO category keywords: bitcoin, ethereum, crypto, blockchain, whale, tvl, defi, nft, web3, onchain, etc.
+  - Added TECH category keywords: ai, artificial intelligence, machine learning, software, startup, etc.
+  - Implemented word-boundary matching for more precise classification
+  - Updated `prisma/schema.prisma` Category enum: ECONOMIC | POLITICAL | CRYPTO | TECH | GENERAL
+
+- **Error Logging**
+  - Added `console.warn()` for all silent catch blocks in fetchers for observability
+  - Etherscan V2 API migration with proper error handling
+
+### Changed
+
+- **Cron Schedule**
+  - Reverted to daily schedule (0 8 * * *) for Vercel Hobby tier compatibility
+  - Removed literal secret from URL path (now uses Authorization header)
+
+- **API Enhancements**
+  - `/api/articles` now supports `excludeGeneral` query parameter
+  - `/api/ingest` uses Promise.allSettled for 7 fetchers (RSS, X, Currents, CoinGecko, Etherscan, DeFiLlama, Binance)
+
+### Technical Details
+
+- 62 tests passing (keyword classifier, crypto fetchers, etc.)
+- Etherscan V2 API migration complete
+- All fetchers use consistent error handling patterns
+- CryptoSnapshot upsert for tracking metric changes
+
+## [0.4.0] - 2026-05-08 - UI Redesign (3-Column Layout)
+
+### Added
+
+- **3-Column Responsive Layout**
+  - `components/layout/layout-shell.tsx` - Main layout wrapper with responsive grid
+  - `components/layout/header-bar.tsx` - Sticky header with logo + notification bell
+  - `components/layout/sidebar-left.tsx` - Fixed left sidebar (categories, sources, alerts)
+  - `components/layout/sidebar-right.tsx` - Fixed right sidebar (breaking, trending, alerts)
+  - `components/layout/mobile-drawer.tsx` - Hamburger drawer for mobile navigation
+  - Responsive breakpoints: xl (3 cols) → lg (2 cols) → mobile (1 col + drawer)
+
+- **Category Colors**
+  - CRYPTO: orange
+  - TECH: purple
+  - ECONOMIC: blue (existing)
+  - POLITICAL: red (existing)
+  - GENERAL: gray (existing)
+
+### Changed
+
+- **Frontend Architecture**
+  - Migrated from simple filter bar to FB-style 3-column layout
+  - Home page now uses layout-shell wrapper
+  - Improved mobile UX with hamburger drawer
+  - Better visual hierarchy with sidebars
+
+### Technical Stack
+
+- Tailwind CSS responsive utilities for layout
+- Mobile-first design approach
+- Maintained all existing functionality (filters, SSE, push notifications)
+

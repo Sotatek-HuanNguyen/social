@@ -14,6 +14,18 @@ const RSS_FEEDS = [
   { url: "https://vnexpress.net/rss/so-hoa.rss", source: "VnExpress" },
   { url: "https://tuoitre.vn/rss/nhip-song-so.rss", source: "TuoiTre" },
   { url: "https://thanhnien.vn/rss/cong-nghe.rss", source: "ThanhNien" },
+  // Macro / International feeds
+  { url: "https://news.google.com/rss/search?q=site:reuters.com+business&hl=en-US&gl=US&ceid=US:en", source: "Reuters" },
+  { url: "https://feeds.bloomberg.com/markets/news.rss", source: "Bloomberg" },
+  // Programming / Coding feeds
+  { url: "https://dev.to/feed", source: "Dev.to" },
+  { url: "https://www.freecodecamp.org/news/rss/", source: "FreeCodeCamp" },
+  { url: "https://hnrss.org/frontpage", source: "HackerNews" },
+  { url: "https://css-tricks.com/feed/", source: "CSSTricks" },
+  // Reddit feeds
+  { url: "https://www.reddit.com/r/programming/.rss", source: "Reddit" },
+  { url: "https://www.reddit.com/r/webdev/.rss", source: "Reddit" },
+  { url: "https://www.reddit.com/r/reactjs/.rss", source: "Reddit" },
 ];
 
 const parser = new Parser({ timeout: 10_000 });

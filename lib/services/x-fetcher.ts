@@ -2,13 +2,18 @@ import { TwitterApi } from "twitter-api-v2";
 import { RawArticle } from "@/types/article";
 
 // X accounts to monitor (handle → cached user ID)
-const X_ACCOUNTS = [
+export const X_ACCOUNTS = [
   { handle: "CryptoCred" },
   { handle: "AltCryptoBet" },
   { handle: "BTC_Archive" },
   { handle: "CoinDesk" },
   { handle: "CryptoNews" },
+  { handle: "KobeissiLetter" },
+  { handle: "DeItaone" },
+  { handle: "zerohedge" },
 ];
+
+export const X_HANDLES = X_ACCOUNTS.map((a) => a.handle);
 
 // In-memory user ID cache (persists across invocations in warm serverless)
 const userIdCache = new Map<string, string>();

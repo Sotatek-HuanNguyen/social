@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   LayoutGrid,
@@ -10,6 +10,7 @@ import {
   Landmark,
   Newspaper,
   Bell,
+  Compass,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +29,8 @@ const SOURCES = [
   "VietnamNet",
   "TuoiTre",
   "ThanhNien",
+  "Reuters",
+  "Bloomberg",
   "CurrentsAPI",
   "X/Twitter",
   "CoinGecko",
@@ -46,6 +49,10 @@ export function SidebarLeft({ className, onNavigate }: SidebarLeftProps) {
   const searchParams = useSearchParams();
   const activeCategory = searchParams.get("category") ?? "";
   const activeSource = searchParams.get("source") ?? "";
+
+  const pathname = usePathname();
+  const isActiveAlerts = pathname === "/alerts";
+  const isActiveMacro = pathname === "/macro";
 
   const navigate = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -69,7 +76,7 @@ export function SidebarLeft({ className, onNavigate }: SidebarLeftProps) {
         <nav className="space-y-0.5">
           {CATEGORIES.map((cat) => {
             const Icon = cat.icon;
-            const isActive = activeCategory === cat.value;
+            const isActive = activeCategory === cat.value && pathname === "/";
             return (
               <button
                 key={cat.value}
@@ -99,7 +106,7 @@ export function SidebarLeft({ className, onNavigate }: SidebarLeftProps) {
             onClick={() => navigate("source", "")}
             className={cn(
               "w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors",
-              activeSource === ""
+              activeSource === "" && pathname === "/"
                 ? "bg-primary/10 text-primary font-medium"
                 : "hover:bg-muted text-foreground"
             )}
@@ -112,7 +119,7 @@ export function SidebarLeft({ className, onNavigate }: SidebarLeftProps) {
               onClick={() => navigate("source", src)}
               className={cn(
                 "w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors truncate",
-                activeSource === src
+                activeSource === src && pathname === "/"
                   ? "bg-primary/10 text-primary font-medium"
                   : "hover:bg-muted text-muted-foreground"
               )}
@@ -123,12 +130,30 @@ export function SidebarLeft({ className, onNavigate }: SidebarLeftProps) {
         </nav>
       </div>
 
-      {/* Alerts shortcut */}
-      <div>
+      {/* Utilities */}
+      <div className="space-y-1">
+        <Link
+          href="/macro"
+          onClick={() => onNavigate?.()}
+          className={cn(
+            "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+            isActiveMacro
+              ? "bg-primary/10 text-primary font-medium"
+              : "hover:bg-muted text-foreground"
+          )}
+        >
+          <Compass className="h-4 w-4 shrink-0" />
+          Combo Macro
+        </Link>
         <Link
           href="/alerts"
           onClick={() => onNavigate?.()}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted transition-colors"
+          className={cn(
+            "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+            isActiveAlerts
+              ? "bg-primary/10 text-primary font-medium"
+              : "hover:bg-muted text-foreground"
+          )}
         >
           <Bell className="h-4 w-4 shrink-0" />
           Quản lý cảnh báo

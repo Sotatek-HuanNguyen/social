@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { Category } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { paginate } from "@/lib/utils/api-helpers";
+import { X_HANDLES } from "@/lib/services/x-fetcher";
 
 export async function GET(req: NextRequest) {
   const params = req.nextUrl.searchParams;
@@ -21,7 +22,11 @@ export async function GET(req: NextRequest) {
   const where = {
     ...(category ? { category } : {}),
     ...(excludeGeneral ? { category: { not: "GENERAL" as Category } } : {}),
-    ...(source ? { source } : {}),
+    ...(source
+      ? source === "X/Twitter"
+        ? { source: { in: X_HANDLES } }
+        : { source }
+      : {}),
     ...(search ? { title: { contains: search, mode: "insensitive" as const } } : {}),
   };
 
